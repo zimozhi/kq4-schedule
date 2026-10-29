@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>口腔4班课表</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #EEF2F6;
+    color: #1F2D3D;
+    padding-bottom: 60px;
+  }
+  .header {
+    background: linear-gradient(135deg, #2B7A9E, #3FA7C9);
+    color: #fff;
+    padding: 18px 16px 14px;
+  }
+  .header h1 { font-size: 19px; font-weight: 600; }
+  .header .sub { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+
+  /* 周次切换条 */
+  .week-nav {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    margin: 12px 14px 0;
+    border-radius: 12px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(43,122,158,0.08);
+  }
+  .week-nav button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    color: #2B7A9E;
+    cursor: pointer;
+    border-radius: 8px;
+  }
+  .week-nav button:active { background: #E8F4F8; }
+  .week-center {
+    flex: 1;
+    text-align: center;
+  }
+  .week-center .wnum { font-size: 17px; font-weight: 600; color: #1F2D3D; }
+  .week-center .wdate { font-size: 11px; color: #8A99A8; margin-top: 2px; }
+  .today-btn {
+    font-size: 12px !important;
+    width: auto !important;
+    padding: 0 10px !important;
+    height: 30px !important;
+    background: #E8F4F8 !important;
+    color: #2B7A9E !important;
+  }
+
+  .tab-bar {
+    display: flex;
+    background: #fff;
+    margin: 10px 14px 0;
+    border-radius: 12px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(43,122,158,0.08);
+  }
+  .tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 15px;
+    border-radius: 9px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: #5A6B7B;
+    font-weight: 500;
+  }
+  .tab-btn.active { background: #2B7A9E; color: #fff; }
+
+  .day-block { margin: 14px; }
+  .day-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #2B7A9E;
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+  .day-title .date { color: #8A99A8; font-weight: 400; font-size: 13px; margin-left: 6px; }
+  .day-title .cur { color: #D9534F; font-size: 11px; margin-left: 6px; }
+
+  .course-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    position: relative;
+  }
+  .period-badge {
+    flex-shrink: 0;
+    width: 56px;
+    text-align: center;
+    border-right: 1px solid #EEF2F6;
+    padding-right: 12px;
+    margin-right: 12px;
+  }
+  .period-badge .num { font-size: 15px; font-weight: 700; color: #2B7A9E; }
+  .period-badge .time { font-size: 10px; color: #8A99A8; margin-top: 2px; }
+  .course-info { flex: 1; min-width: 0; }
+  .course-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1F2D3D;
+    outline: none;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  .course-name:focus { background: #E8F4F8; }
+  .course-name:empty::before { content: "点这里输入课程名"; color: #C0CCD8; }
+  .course-room {
+    font-size: 12px;
+    color: #8A99A8;
+    margin-top: 3px;
+    outline: none;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  .course-room:focus { background: #E8F4F8; }
+  .course-room:empty::before { content: "教室（选填）"; color: #C0CCD8; }
+  .del-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #FFE8E8;
+    color: #D9534F;
+    border: none;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .add-btn {
+    width: 100%;
+    background: transparent;
+    border: 2px dashed #C8D6E0;
+    border-radius: 12px;
+    padding: 12px;
+    color: #8AA5B8;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  .add-btn:active { background: #fff; border-color: #2B7A9E; color: #2B7A9E; }
+  .empty-day {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    color: #B0BEC9;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: none; align-items: flex-end; z-index: 100;
+  }
+  .modal-mask.show { display: flex; }
+  .modal { background: #fff; width: 100%; border-radius: 16px 16px 0 0; padding: 16px; }
+  .modal h3 { font-size: 16px; margin-bottom: 12px; text-align: center; }
+  .modal-item { padding: 14px; text-align: center; border-bottom: 1px solid #EEF2F6; font-size: 15px; cursor: pointer; }
+  .modal-item:active { background: #F0F7FA; }
+  .modal-cancel { padding: 14px; text-align: center; font-size: 15px; color: #8A99A8; cursor: pointer; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>口腔4班课程表</h1>
+  <div class="sub">按周保存 · 左右箭头切换周次 · 点课程名直接编辑</div>
+</div>
+
+<div class="week-nav">
+  <button id="prevWeek">‹</button>
+  <div class="week-center">
+    <div class="wnum" id="weekNum">第9周</div>
+    <div class="wdate" id="weekDate">10月26日 - 10月30日</div>
+  </div>
+  <button id="nextWeek">›</button>
+  <button class="today-btn" id="thisWeekBtn">回到本周</button>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" data-group="a">甲组</button>
+  <button class="tab-btn" data-group="b">乙组</button>
+</div>
+
+<div id="schedule"></div>
+
+<!-- 访问记录 -->
+<div style="margin:20px 14px 0;">
+  <div id="visitToggle" style="background:#fff;border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,0.04);cursor:pointer;">
+    <span style="font-size:14px;font-weight:600;color:#2B7A9E;">访问记录</span>
+    <span style="font-size:13px;color:#8A99A8;" id="visitCount">0 条</span>
+  </div>
+  <div id="visitList" style="display:none;margin-top:8px;"></div>
+</div>
+
+<div class="modal-mask" id="periodModal">
+  <div class="modal">
+    <h3>选择节次</h3>
+    <div id="periodList"></div>
+    <div class="modal-cancel" id="modalCancel">取消</div>
+  </div>
+</div>
+
+<script>
+const DAY_NAMES = ["周一","周二","周三","周四","周五"];
+const PERIODS = [
+  { id: 1, label: "1-2节", time: "08:00-09:40" },
+  { id: 2, label: "3-4节", time: "10:00-11:40" },
+  { id: 3, label: "5-6节", time: "14:00-15:40" },
+  { id: 4, label: "7-8节", time: "16:00-17:40" }
+];
+
+// 第9周默认数据（首次使用时填入）
+const WEEK9_DEFAULT = {
+  a: [
+    [{period:1,name:"磨牙I",room:"教室 5114"},{period:2,name:"人体结构与机能（结构）",room:""},{period:3,name:"英语I",room:""},{period:4,name:"军事理论",room:""}],
+    [{period:1,name:"口腔解剖生理学",room:"教室 2402"},{period:2,name:"大学生心理健康教育",room:""}],
+    [{period:1,name:"人体结构与机能（结构）",room:""}],
+    [{period:1,name:"口腔解剖生理学",room:"教室 2402"},{period:2,name:"英语I",room:""},{period:3,name:"思想道德与法治",room:""}],
+    [{period:1,name:"人体结构与机能（结构）",room:""},{period:2,name:"磨牙I",room:"教室 5114"}]
+  ],
+  b: [
+    [],
+    [{period:1,name:"口腔解剖生理学",room:"教室 2402"},{period:2,name:"大学生心理健康教育",room:""},{period:3,name:"磨牙I",room:"教室 5104"}],
+    [{period:3,name:"信息技术",room:""}],
+    [{period:1,name:"口腔解剖生理学",room:"教室 2402"}],
+    [{period:2,name:"大学体育1",room:""},{period:3,name:"信息技术",room:""}]
+  ]
+};
+
+const STORE_KEY = "kq4_week_data_v2";
+const TERM_KEY = "kq4_term_start_v1";
+const DEFAULT_TERM = "2026-08-31";
+
+// allData: { "9": { a:[[],[]...], b:[[],[]...] }, "10": {...} }
+let allData = loadAll();
+let currentWeek = todayWeekNum();
+let currentGroup = "a";
+let pendingAddDay = -1;
+
+function emptyWeek() {
+  return { a: [[],[],[],[],[]], b: [[],[],[],[],[]] };
+}
+function loadAll() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      // 首次使用时把第9周默认数据填进去
+      if (!d["9"]) d["9"] = JSON.parse(JSON.stringify(WEEK9_DEFAULT));
+      return d;
+    }
+  } catch(e) {}
+  return { "9": JSON.parse(JSON.stringify(WEEK9_DEFAULT)) };
+}
+function saveAll() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(allData)); } catch(e) {}
+}
+function getWeekData(w) {
+  if (!allData[w]) allData[w] = emptyWeek();
+  return allData[w];
+}
+function loadTerm() {
+  try { const t = localStorage.getItem(TERM_KEY); if (t) return t; } catch(e) {}
+  return DEFAULT_TERM;
+}
+function periodInfo(id) {
+  return PERIODS.find(p => p.id === id) || PERIODS[0];
+}
+
+// 根据日期算周几和日期
+function weekDateInfo(weekNum) {
+  const termStart = new Date(loadTerm());
+  termStart.setHours(0,0,0,0);
+  // 第N周周一 = 开学日 + (N-1)*7天
+  const monday = new Date(termStart);
+  monday.setDate(termStart.getDate() + (weekNum - 1) * 7);
+  const dates = [];
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    dates.push((d.getMonth()+1) + "月" + d.getDate() + "日");
+  }
+  return dates;
+}
+function todayWeekNum() {
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((day + 6) % 7));
+  monday.setHours(0,0,0,0);
+  const termStart = new Date(loadTerm());
+  termStart.setHours(0,0,0,0);
+  const diffDays = Math.floor((monday - termStart) / 86400000);
+  return Math.floor(diffDays / 7) + 1;
+}
+function todayDayIndex() {
+  const day = new Date().getDay(); // 0=周日
+  return (day + 6) % 7; // 周一=0
+}
+
+function render() {
+  const dates = weekDateInfo(currentWeek);
+  const todayW = todayWeekNum();
+  document.getElementById("weekNum").textContent = "第" + currentWeek + "周";
+  document.getElementById("weekDate").textContent = dates[0] + " - " + dates[4];
+
+  const wd = getWeekData(currentWeek);
+  const curDay = todayDayIndex();
+  const isCurrentWeek = (currentWeek === todayW);
+
+  const container = document.getElementById("schedule");
+  let html = "";
+  wd[currentGroup].forEach((courses, i) => {
+    const isToday = isCurrentWeek && (i === curDay);
+    html += '<div class="day-block">';
+    html += '<div class="day-title">' + DAY_NAMES[i];
+    html += '<span class="date">' + dates[i] + '</span>';
+    if (isToday) html += '<span class="cur">今天</span>';
+    html += '</div>';
+    if (courses.length === 0) {
+      html += '<div class="empty-day">本周暂无课表，点下方添加</div>';
+    } else {
+      courses.forEach((c, ci) => {
+        const p = periodInfo(c.period);
+        html += '<div class="course-card">';
+        html += '<div class="period-badge"><div class="num">' + p.label + '</div><div class="time">' + p.time + '</div></div>';
+        html += '<div class="course-info">';
+        html += '<div class="course-name" contenteditable="true" data-day="' + i + '" data-ci="' + ci + '" data-field="name">' + escapeHtml(c.name) + '</div>';
+        html += '<div class="course-room" contenteditable="true" data-day="' + i + '" data-ci="' + ci + '" data-field="room">' + escapeHtml(c.room) + '</div>';
+        html += '</div>';
+        html += '<button class="del-btn" data-day="' + i + '" data-ci="' + ci + '">×</button>';
+        html += '</div>';
+      });
+    }
+    html += '<button class="add-btn" data-day="' + i + '">+ 添加课程</button>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+  bindEvents();
+}
+
+function escapeHtml(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function bindEvents() {
+  document.querySelectorAll("[contenteditable]").forEach(el => {
+    el.addEventListener("blur", () => {
+      const d = +el.dataset.day, ci = +el.dataset.ci, f = el.dataset.field;
+      const wd = getWeekData(currentWeek);
+      wd[currentGroup][d][ci][f] = el.textContent.trim();
+      saveAll();
+    });
+    el.addEventListener("keydown", e => {
+      if (e.key === "Enter") { e.preventDefault(); el.blur(); }
+    });
+  });
+  document.querySelectorAll(".del-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const d = +btn.dataset.day, ci = +btn.dataset.ci;
+      const wd = getWeekData(currentWeek);
+      wd[currentGroup][d].splice(ci, 1);
+      saveAll();
+      render();
+    });
+  });
+  document.querySelectorAll(".add-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      pendingAddDay = +btn.dataset.day;
+      openPeriodModal();
+    });
+  });
+}
+
+function openPeriodModal() {
+  const list = document.getElementById("periodList");
+  list.innerHTML = "";
+  PERIODS.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "modal-item";
+    div.textContent = p.label + "  " + p.time;
+    div.addEventListener("click", () => {
+      const wd = getWeekData(currentWeek);
+      wd[currentGroup][pendingAddDay].push({ period: p.id, name: "", room: "" });
+      saveAll();
+      closeModal();
+      render();
+    });
+    list.appendChild(div);
+  });
+  document.getElementById("periodModal").classList.add("show");
+}
+function closeModal() {
+  document.getElementById("periodModal").classList.remove("show");
+  pendingAddDay = -1;
+}
+document.getElementById("modalCancel").addEventListener("click", closeModal);
+document.getElementById("periodModal").addEventListener("click", e => {
+  if (e.target.id === "periodModal") closeModal();
+});
+
+// 切周
+document.getElementById("prevWeek").addEventListener("click", () => { currentWeek--; render(); });
+document.getElementById("nextWeek").addEventListener("click", () => { currentWeek++; render(); });
+document.getElementById("thisWeekBtn").addEventListener("click", () => { currentWeek = todayWeekNum(); render(); });
+
+// 甲乙组切换
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentGroup = btn.dataset.group;
+    render();
+  });
+});
+
+// 访问记录
+const VISIT_KEY = "kq4_visit_log_v1";
+function loadVisits() {
+  try { return JSON.parse(localStorage.getItem(VISIT_KEY)) || []; } catch(e) { return []; }
+}
+function saveVisits(list) {
+  try { localStorage.setItem(VISIT_KEY, JSON.stringify(list)); } catch(e) {}
+}
+function recordVisit() {
+  const now = new Date();
+  const entry = {
+    time: now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,"0") + "-" + String(now.getDate()).padStart(2,"0") + " " + String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0"),
+    ip: "获取中...",
+    location: ""
+  };
+  const list = loadVisits();
+  list.unshift(entry);
+  if (list.length > 100) list.length = 100;
+  saveVisits(list);
+  renderVisits();
+  fetch("https://ipapi.co/json/")
+    .then(r => r.json())
+    .then(d => {
+      entry.ip = d.ip || "未知";
+      entry.location = [d.city, d.region, d.country_name].filter(Boolean).join(" ");
+      saveVisits(list);
+      renderVisits();
+    })
+    .catch(() => {
+      entry.ip = "离线";
+      saveVisits(list);
+      renderVisits();
+    });
+}
+function renderVisits() {
+  const list = loadVisits();
+  document.getElementById("visitCount").textContent = list.length + " 条";
+  const el = document.getElementById("visitList");
+  if (list.length === 0) {
+    el.innerHTML = '<div style="background:#fff;border-radius:12px;padding:20px;text-align:center;color:#B0BEC9;font-size:13px;">暂无访问记录</div>';
+    return;
+  }
+  let html = "";
+  list.forEach(v => {
+    html += '<div style="background:#fff;border-radius:10px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">';
+    html += '<div style="font-size:13px;color:#1F2D3D;">' + v.time + '</div>';
+    html += '<div style="font-size:12px;color:#8A99A8;text-align:right;">' + escapeHtml(v.ip) + (v.location ? '<br><span style="color:#B0BEC9;">' + escapeHtml(v.location) + '</span>' : '') + '</div>';
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+document.getElementById("visitToggle").addEventListener("click", () => {
+  const el = document.getElementById("visitList");
+  el.style.display = el.style.display === "none" ? "block" : "none";
+});
+
+render();
+recordVisit();
+</script>
+
+</body>
+</html>
