@@ -247,7 +247,27 @@ const WEEK9_DEFAULT = {
   ]
 };
 
-const STORE_KEY = "kq4_week_data_v3";
+// 第10周默认数据（11月2日-11月6日）
+const WEEK10_DEFAULT = {
+  a: [
+    [{period:2,name:"人体结构与机能（结构）",room:""},{period:3,name:"英语I",room:""},{period:4,name:"军事理论",room:""}],
+    [{period:1,name:"口腔解剖生理学",room:"教室 2402"},{period:2,name:"大学生心理健康教育",room:""},{period:3,name:"人体结构与机能（结构）（实验）",room:""},{period:4,name:"大学生职业生涯规划（实验）",room:""}],
+    [{period:1,name:"人体结构与机能（结构）",room:""},{period:3,name:"信息技术",room:""}],
+    [{period:1,name:"口腔解剖生理学",room:"教室 2402"},{period:2,name:"英语I",room:""},{period:3,name:"思想道德与法治",room:""},{period:4,name:"思想道德与法治",room:""}],
+    [{period:1,name:"人体结构与机能（结构）",room:""},{period:2,name:"大学体育1",room:""},{period:3,name:"信息技术",room:""}]
+  ],
+  b: [
+    [{period:1,name:"磨牙2",room:"教室 5104"},{period:2,name:"人体结构与机能（结构）",room:""},{period:3,name:"英语I",room:""},{period:4,name:"军事理论",room:""}],
+    [{period:1,name:"口腔解剖生理学",room:"教室 2402"},{period:2,name:"大学生心理健康教育",room:""},{period:3,name:"人体结构与机能（结构）（实验）",room:""},{period:4,name:"大学生职业生涯规划（实验）",room:""}],
+    [{period:1,name:"人体结构与机能（结构）",room:""},{period:3,name:"信息技术",room:""}],
+    [{period:1,name:"口腔解剖生理学",room:"教室 2402"},{period:2,name:"英语I",room:""},{period:3,name:"思想道德与法治",room:""},{period:4,name:"思想道德与法治",room:""}],
+    [{period:1,name:"人体结构与机能（结构）",room:""},{period:2,name:"大学体育1",room:""},{period:3,name:"信息技术",room:""}]
+  ]
+};
+
+const WEEK_DEFAULTS = { "9": WEEK9_DEFAULT, "10": WEEK10_DEFAULT };
+
+const STORE_KEY = "kq4_week_data_v4";
 const TERM_KEY = "kq4_term_start_v1";
 const DEFAULT_TERM = "2026-08-31";
 
@@ -265,12 +285,18 @@ function loadAll() {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) {
       const d = JSON.parse(raw);
-      // 首次使用时把第9周默认数据填进去
-      if (!d["9"]) d["9"] = JSON.parse(JSON.stringify(WEEK9_DEFAULT));
+      // 把内置的默认周次数据补齐
+      Object.keys(WEEK_DEFAULTS).forEach(k => {
+        if (!d[k]) d[k] = JSON.parse(JSON.stringify(WEEK_DEFAULTS[k]));
+      });
       return d;
     }
   } catch(e) {}
-  return { "9": JSON.parse(JSON.stringify(WEEK9_DEFAULT)) };
+  const d = {};
+  Object.keys(WEEK_DEFAULTS).forEach(k => {
+    d[k] = JSON.parse(JSON.stringify(WEEK_DEFAULTS[k]));
+  });
+  return d;
 }
 function saveAll() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(allData)); } catch(e) {}
